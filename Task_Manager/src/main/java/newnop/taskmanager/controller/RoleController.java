@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import newnop.taskmanager.constant.AppConstants;
+
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping(AppConstants.ROLES_API)
 public class RoleController {
 
     private final RoleService roleService;

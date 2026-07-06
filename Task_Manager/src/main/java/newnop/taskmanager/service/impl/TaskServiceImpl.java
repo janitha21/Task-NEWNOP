@@ -4,25 +4,30 @@ import newnop.taskmanager.dto.TaskDto;
 import newnop.taskmanager.entity.Task;
 import newnop.taskmanager.exception.ResourceNotFoundException;
 import newnop.taskmanager.repository.TaskRepository;
+import newnop.taskmanager.repository.UserRepository;
 import newnop.taskmanager.service.TaskService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import newnop.taskmanager.entity.TaskStatus;
+import newnop.taskmanager.entity.User;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.UUID;
 
 @Service
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, ModelMapper modelMapper, org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
+    public TaskServiceImpl(TaskRepository taskRepository, UserRepository userRepository, ModelMapper modelMapper, SimpMessagingTemplate messagingTemplate) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
         this.modelMapper = modelMapper;
         this.messagingTemplate = messagingTemplate;
     }
@@ -63,8 +68,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskDto createTask(TaskDto taskDto, UUID ownerUuid) {
         Task task = modelMapper.map(taskDto, Task.class);
         
-        newnop.taskmanager.entity.User owner = new newnop.taskmanager.entity.User();
-        owner.setUuid(ownerUuid);
+        User owner = userRepository.getReferenceById(ownerUuid);
         task.setOwner(owner);
         
         Task savedTask = taskRepository.save(task);

@@ -15,8 +15,10 @@ import jakarta.validation.Valid;
 import newnop.taskmanager.entity.TaskStatus;
 import java.util.UUID;
 
+import newnop.taskmanager.constant.AppConstants;
+
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping(AppConstants.TASKS_API)
 public class TaskController {
 
     private final TaskService taskService;
