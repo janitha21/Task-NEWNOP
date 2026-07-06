@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import newnop.taskmanager.constant.AppConstants;
+
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(AppConstants.USERS_API)
 public class UserController {
 
     private final UserService userService;

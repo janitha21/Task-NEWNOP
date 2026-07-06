@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import newnop.taskmanager.constant.AppConstants;
+
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(AppConstants.AUTH_API)
 public class AuthController {
 
     private final UserService userService;
