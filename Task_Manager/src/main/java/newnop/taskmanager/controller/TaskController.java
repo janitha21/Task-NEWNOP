@@ -30,7 +30,7 @@ public class TaskController {
 
     //----create task
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<TaskDto> createTask(@Valid @RequestBody TaskDto taskDto, Authentication authentication) {
         System.out.println("task" +taskDto);
         UUID userUuid = UUID.fromString(authentication.getName());
@@ -40,7 +40,7 @@ public class TaskController {
 
     //-----get all tasks
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority( 'ROLE_ADMIN')")
     public ResponseEntity<Page<TaskDto>> getAllTasks(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) UUID owner,
@@ -62,7 +62,7 @@ public class TaskController {
 
     //-----task by id
     @GetMapping("/{uuid}")
-    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<TaskDto> getTaskById(@PathVariable UUID uuid, Authentication authentication) {
         TaskDto taskDto = taskService.getTaskById(uuid);
         
@@ -77,7 +77,7 @@ public class TaskController {
 
     //------update task
     @PutMapping("/{uuid}")
-    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<TaskDto> updateTask(@PathVariable UUID uuid, @Valid @RequestBody TaskDto taskDto, Authentication authentication) {
         UUID userUuid = UUID.fromString(authentication.getName());
         boolean isAdmin = authentication.getAuthorities().stream()
@@ -89,7 +89,7 @@ public class TaskController {
 
     //------delete task
     @DeleteMapping("/{uuid}")
-    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID uuid, Authentication authentication) {
         UUID userUuid = UUID.fromString(authentication.getName());
         boolean isAdmin = authentication.getAuthorities().stream()

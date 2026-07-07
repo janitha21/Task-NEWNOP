@@ -19,14 +19,32 @@ public class JwtService {
     @Value("${jwt.expiration:86400000}") // 1 day in ms
     private long expiration;
 
+    private static final long ACCESS_TOKEN_EXPIRY  = 15L * 60 * 1000;         // 15 minutes
+    private static final long REFRESH_TOKEN_EXPIRY = 7L * 24 * 60 * 60 * 1000; // 7 days
+
     public String generateToken(User user) {
+        return generateAccessToken(user);
+    }
+
+    public String generateAccessToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256(secret);
         return JWT.create()
                 .withSubject(user.getUuid().toString())
                 .withClaim("username", user.getUsername())
                 .withClaim("role", user.getRole().getName().toUpperCase())
+                .withClaim("type", "access")
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
+                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))
+                .sign(algorithm);
+    }
+
+    public String generateRefreshToken(User user) {
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.create()
+                .withSubject(user.getUuid().toString())
+                .withClaim("type", "refresh")
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRY))
                 .sign(algorithm);
     }
 
