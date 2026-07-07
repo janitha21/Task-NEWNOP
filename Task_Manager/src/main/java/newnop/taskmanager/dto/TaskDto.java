@@ -1,9 +1,7 @@
 package newnop.taskmanager.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.UUID;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -16,6 +14,7 @@ import newnop.taskmanager.entity.TaskStatus;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class TaskDto {
     private UUID uuid;
     
