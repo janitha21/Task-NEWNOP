@@ -24,7 +24,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(user.getUuid().toString())
                 .withClaim("username", user.getUsername())
-                .withClaim("role", "ROLE_" + user.getRole().getName().toUpperCase())
+                .withClaim("role", user.getRole().getName().toUpperCase())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
                 .sign(algorithm);

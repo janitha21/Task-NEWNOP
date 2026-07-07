@@ -36,6 +36,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto userDto) {
+
+        System.out.println(userDto.getEmail()+" "+userDto.getPassword()+"role "+userDto.getRole());
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -43,6 +45,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         UserDto createdUser = userService.createUser(userDto);
+        System.out.println(userDto.getEmail()+" "+userDto.getPassword()+"role "+userDto.getRole());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 

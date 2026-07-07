@@ -38,6 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String subjectUuid = decodedJWT.getSubject();
                 String role = decodedJWT.getClaim("role").asString();
 
+                System.out.println("JWT =" + subjectUuid + " | role=" + role);
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         subjectUuid,
                         null,
