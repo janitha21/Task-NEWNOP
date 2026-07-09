@@ -1,8 +1,10 @@
 package newnop.taskmanager.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.validation.Valid;
 import newnop.taskmanager.dto.AuthResponse;
 import newnop.taskmanager.dto.LoginRequest;
+import newnop.taskmanager.dto.RefreshTokenRequest;
 import newnop.taskmanager.dto.UserDto;
 import newnop.taskmanager.entity.User;
 import newnop.taskmanager.repository.UserRepository;
@@ -16,8 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import newnop.taskmanager.constant.AppConstants;
+
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(AppConstants.AUTH_API)
 public class AuthController {
 
     private final UserService userService;
@@ -53,9 +59,37 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
         UserDto userDto = userService.getUserById(user.getUuid());
 
-        return ResponseEntity.ok(new AuthResponse(token, userDto));
+        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken, userDto));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request) {
+        DecodedJWT decoded = jwtService.validateToken(request.getRefreshToken());
+
+        if (decoded == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String tokenType = decoded.getClaim("type").asString();
+        if (!"refresh".equals(tokenType)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UUID userUuid = UUID.fromString(decoded.getSubject());
+        User user = userRepository.findById(userUuid).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+        UserDto userDto = userService.getUserById(userUuid);
+
+        return ResponseEntity.ok(new AuthResponse(newAccessToken, newRefreshToken, userDto));
     }
 }

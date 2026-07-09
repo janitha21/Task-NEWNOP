@@ -4,25 +4,32 @@ import newnop.taskmanager.dto.TaskDto;
 import newnop.taskmanager.entity.Task;
 import newnop.taskmanager.exception.ResourceNotFoundException;
 import newnop.taskmanager.repository.TaskRepository;
+import newnop.taskmanager.repository.UserRepository;
 import newnop.taskmanager.service.TaskService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import newnop.taskmanager.entity.TaskStatus;
+import newnop.taskmanager.entity.User;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import newnop.taskmanager.constant.AppConstants;
 import java.util.UUID;
 
 @Service
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, ModelMapper modelMapper, org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
+    public TaskServiceImpl(TaskRepository taskRepository, UserRepository userRepository, ModelMapper modelMapper, SimpMessagingTemplate messagingTemplate) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
         this.modelMapper = modelMapper;
         this.messagingTemplate = messagingTemplate;
     }
@@ -49,9 +56,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskDto getTaskById(UUID uuid) {
+    public TaskDto getTaskById(UUID uuid, Authentication authentication) {
         Task task = taskRepository.findById(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with UUID: " + uuid));
+                
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(AppConstants.ROLE_ADMIN));
+        if (!isAdmin && (task.getOwner() == null || !task.getOwner().getUuid().toString().equals(authentication.getName()))) {
+            throw new org.springframework.security.access.AccessDeniedException("You are not authorized to view this task");
+        }
+        
         TaskDto dto = modelMapper.map(task, TaskDto.class);
         if (task.getOwner() != null) {
             dto.setOwnerUuid(task.getOwner().getUuid());
@@ -63,8 +77,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskDto createTask(TaskDto taskDto, UUID ownerUuid) {
         Task task = modelMapper.map(taskDto, Task.class);
         
-        newnop.taskmanager.entity.User owner = new newnop.taskmanager.entity.User();
-        owner.setUuid(ownerUuid);
+        User owner = userRepository.getReferenceById(ownerUuid);
         task.setOwner(owner);
         
         Task savedTask = taskRepository.save(task);
@@ -77,11 +90,15 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskDto updateTask(UUID uuid, TaskDto taskDto, UUID requesterUuid, boolean isAdmin) {
+    public TaskDto updateTask(UUID uuid, TaskDto taskDto, Authentication authentication) {
         Task existingTask = taskRepository.findById(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with UUID: " + uuid));
         
-        if (!isAdmin && (existingTask.getOwner() == null || !existingTask.getOwner().getUuid().equals(requesterUuid))) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(AppConstants.ROLE_ADMIN));
+        String requesterUuid = authentication.getName();
+
+        if (!isAdmin && (existingTask.getOwner() == null || !existingTask.getOwner().getUuid().toString().equals(requesterUuid))) {
             throw new org.springframework.security.access.AccessDeniedException("You are not authorized to update this task");
         }
         
@@ -103,11 +120,15 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void deleteTask(UUID uuid, UUID requesterUuid, boolean isAdmin) {
+    public void deleteTask(UUID uuid, Authentication authentication) {
         Task task = taskRepository.findById(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with UUID: " + uuid));
                 
-        if (!isAdmin && (task.getOwner() == null || !task.getOwner().getUuid().equals(requesterUuid))) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(AppConstants.ROLE_ADMIN));
+        String requesterUuid = authentication.getName();
+
+        if (!isAdmin && (task.getOwner() == null || !task.getOwner().getUuid().toString().equals(requesterUuid))) {
             throw new org.springframework.security.access.AccessDeniedException("You are not authorized to delete this task");
         }
         

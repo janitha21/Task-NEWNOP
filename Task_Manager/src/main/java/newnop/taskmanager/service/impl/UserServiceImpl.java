@@ -10,7 +10,9 @@ import newnop.taskmanager.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import newnop.taskmanager.constant.AppConstants;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,10 +22,10 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ModelMapper modelMapper;
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ModelMapper modelMapper, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.modelMapper = modelMapper;
@@ -49,10 +51,9 @@ public class UserServiceImpl implements UserService {
         User user = modelMapper.map(userDto, User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
-        // Assign default role (e.g., USER) if not provided
         if (user.getRole() == null) {
-            Role userRole = roleRepository.findByName("USER")
-                    .orElseThrow(() -> new ResourceNotFoundException("Default Role USER not found"));
+            Role userRole = roleRepository.findByName(AppConstants.ROLE_USER)
+                    .orElseThrow(() -> new ResourceNotFoundException("Default Role " + AppConstants.ROLE_USER + " not found"));
             user.setRole(userRole);
         }
         

@@ -14,7 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -35,16 +37,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             DecodedJWT decodedJWT = jwtService.validateToken(token);
 
             if (decodedJWT != null) {
+
+                String tokenType = decodedJWT.getClaim("type").asString();
+                if (!"access".equals(tokenType)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String subjectUuid = decodedJWT.getSubject();
                 String role = decodedJWT.getClaim("role").asString();
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        subjectUuid,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority(role))
-                );
+                log.debug("JWT={} | role={}", subjectUuid, role);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // Guard: if role claim is missing, don't set broken authentication
+                if (subjectUuid != null && role != null) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            subjectUuid,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority(role))
+                    );
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
 

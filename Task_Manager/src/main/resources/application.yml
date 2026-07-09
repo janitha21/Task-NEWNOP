@@ -8,11 +8,15 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/task_manager?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: 1234@Janith
+    url: ${DB_URL:jdbc:mysql://localhost:3306/task_manager?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:1234@Janith}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -26,9 +30,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql://localhost:3306/task_manager_prod?createDatabaseIfNotExist=true&useSSL=true&serverTimezone=UTC
-    username: root
-    password: 1234@Janith
+    url: ${PROD_DB_URL:jdbc:mysql://localhost:3306/task_manager_prod?createDatabaseIfNotExist=true&useSSL=true&serverTimezone=UTC}
+    username: ${PROD_DB_USERNAME:root}
+    password: ${PROD_DB_PASSWORD:1234@Janith}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
