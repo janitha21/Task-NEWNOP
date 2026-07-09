@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.UUID;
 
 import newnop.taskmanager.constant.AppConstants;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping(AppConstants.USERS_API)
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class UserController {
 
     private final UserService userService;
