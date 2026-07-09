@@ -40,4 +40,8 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
+
+    @org.hibernate.annotations.CreationTimestamp
+    @jakarta.persistence.Column(updatable = false)
+    private LocalDateTime createdAt;
 }

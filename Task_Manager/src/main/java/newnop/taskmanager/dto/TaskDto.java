@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.util.UUID;
 import java.time.LocalDateTime;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,8 +27,9 @@ public class TaskDto {
     private TaskStatus status;
     
     @NotNull(message = "Due date is mandatory")
-    @FutureOrPresent(message = "Due date must be in the present or future")
     private LocalDateTime dueDate;
+    
+    private LocalDateTime createdAt;
     
     private UUID ownerUuid;
 }
