@@ -11,4 +11,7 @@ public final class AppConstants {
     public static final String USERS_API = API_BASE + "/users";
     public static final String ROLES_API = API_BASE + "/roles";
     public static final String AUTH_API = API_BASE + "/auth";
+    
+    public static final String ROLE_USER = "ROLE_USER";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
 }

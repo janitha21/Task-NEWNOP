@@ -32,13 +32,12 @@ public class TaskController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<TaskDto> createTask(@Valid @RequestBody TaskDto taskDto, Authentication authentication) {
-        System.out.println("task" +taskDto);
         UUID userUuid = UUID.fromString(authentication.getName());
         TaskDto createdTask = taskService.createTask(taskDto, userUuid);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
-    //-----get all tasks (ADMIN only — sees every task in the system)
+    //-----get all tasks -- admin only
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Page<TaskDto>> getAllTasks(
@@ -51,7 +50,7 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getAllTasks(status, owner, pageable));
     }
 
-    //-----get current user's own tasks (any authenticated user)
+    //-----get own tasks
     @GetMapping("/my")
     @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Page<TaskDto>> getMyTasks(
@@ -70,14 +69,7 @@ public class TaskController {
     @GetMapping("/{uuid}")
     @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<TaskDto> getTaskById(@PathVariable UUID uuid, Authentication authentication) {
-        TaskDto taskDto = taskService.getTaskById(uuid);
-        
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin && !taskDto.getOwnerUuid().toString().equals(authentication.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
+        TaskDto taskDto = taskService.getTaskById(uuid, authentication);
         return ResponseEntity.ok(taskDto);
     }
 
@@ -85,11 +77,7 @@ public class TaskController {
     @PutMapping("/{uuid}")
     @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<TaskDto> updateTask(@PathVariable UUID uuid, @Valid @RequestBody TaskDto taskDto, Authentication authentication) {
-        UUID userUuid = UUID.fromString(authentication.getName());
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                
-        TaskDto updatedTask = taskService.updateTask(uuid, taskDto, userUuid, isAdmin);
+        TaskDto updatedTask = taskService.updateTask(uuid, taskDto, authentication);
         return ResponseEntity.ok(updatedTask);
     }
 
@@ -97,11 +85,7 @@ public class TaskController {
     @DeleteMapping("/{uuid}")
     @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID uuid, Authentication authentication) {
-        UUID userUuid = UUID.fromString(authentication.getName());
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                
-        taskService.deleteTask(uuid, userUuid, isAdmin);
+        taskService.deleteTask(uuid, authentication);
         return ResponseEntity.noContent().build();
     }
 }

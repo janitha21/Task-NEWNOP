@@ -10,6 +10,7 @@ import newnop.taskmanager.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import newnop.taskmanager.constant.AppConstants;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
@@ -51,8 +52,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
         if (user.getRole() == null) {
-            Role userRole = roleRepository.findByName("ROLE_USER")
-                    .orElseThrow(() -> new ResourceNotFoundException("Default Role ROLE_USER not found"));
+            Role userRole = roleRepository.findByName(AppConstants.ROLE_USER)
+                    .orElseThrow(() -> new ResourceNotFoundException("Default Role " + AppConstants.ROLE_USER + " not found"));
             user.setRole(userRole);
         }
         
