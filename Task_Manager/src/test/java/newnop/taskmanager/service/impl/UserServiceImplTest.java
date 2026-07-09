@@ -68,7 +68,7 @@ class UserServiceImplTest {
     @Test
     void createUser_Success_WithDefaultRole() {
         when(modelMapper.map(userDto, User.class)).thenReturn(user);
-        when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
+        when(passwordEncoder.encode("encoded_password")).thenReturn("encoded_password");
         when(roleRepository.findByName(AppConstants.ROLE_USER)).thenReturn(Optional.of(role));
         when(userRepository.save(user)).thenReturn(user);
         when(modelMapper.map(user, UserDto.class)).thenReturn(userDto);
@@ -78,7 +78,7 @@ class UserServiceImplTest {
         assertNotNull(result);
         assertEquals("testuser", result.getUsername());
         
-        verify(passwordEncoder, times(1)).encode("password123");
+        verify(passwordEncoder, times(1)).encode("encoded_password");
         verify(roleRepository, times(1)).findByName(AppConstants.ROLE_USER);
         verify(userRepository, times(1)).save(user);
     }
