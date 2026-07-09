@@ -12,7 +12,11 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:1234@Janith}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
