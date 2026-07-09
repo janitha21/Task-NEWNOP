@@ -35,18 +35,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             DecodedJWT decodedJWT = jwtService.validateToken(token);
 
             if (decodedJWT != null) {
+                // Reject refresh tokens — only "access" tokens should authenticate requests
+                String tokenType = decodedJWT.getClaim("type").asString();
+                if (!"access".equals(tokenType)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String subjectUuid = decodedJWT.getSubject();
                 String role = decodedJWT.getClaim("role").asString();
 
                 System.out.println("JWT =" + subjectUuid + " | role=" + role);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        subjectUuid,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority(role))
-                );
+                // Guard: if role claim is missing, don't set broken authentication
+                if (subjectUuid != null && role != null) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            subjectUuid,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority(role))
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
 
